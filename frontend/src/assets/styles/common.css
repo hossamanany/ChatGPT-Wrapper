@@ -1,0 +1,11 @@
+.hover-blue {
+  @apply hover:text-blue-600;
+}
+
+.modal-footer {
+  @apply flex justify-end;
+}
+
+.modal-button {
+  @apply rounded ml-2;
+}
