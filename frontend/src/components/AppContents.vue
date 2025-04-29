@@ -48,6 +48,7 @@ onMounted(() => {
   setTimeout(() => inputTextarea.value?.focus(), 100);
 });
 
+// TODO: We shouldn't use direct client connection to OpenAI
 const openai = new OpenAI({
   apiKey: settingsStore.apiKey,
   dangerouslyAllowBrowser: true,
@@ -71,6 +72,7 @@ async function onSend() {
   pending.value = false;
 }
 
+// TODO: This should be moved to a service
 async function sendRequestForTitle(message: string) {
   if (chatStore.currentChat && !chatStore.currentChat.title) {
     const completion = await openai.chat.completions.create({
@@ -90,6 +92,7 @@ async function sendRequestForTitle(message: string) {
   }
 }
 
+// TODO: This should be moved to a service
 async function sendRequestForResponse() {
   if (chatStore.currentChat) {
     const stream = await openai.chat.completions.create({

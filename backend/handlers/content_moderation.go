@@ -48,10 +48,8 @@ func containsBannedWords(input string) bool {
 		}
 
 		// Check against banned stems
-		for _, banned := range config.GetBannedStems() {
-			if stemmed == banned {
-				return true
-			}
+		if _, exists := config.GetBannedStems()[stemmed]; exists {
+			return true
 		}
 	}
 	return false

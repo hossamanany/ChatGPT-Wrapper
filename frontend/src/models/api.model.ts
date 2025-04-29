@@ -1,37 +1,38 @@
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
+  role: "system" | "user" | "assistant";
+  content: string;
 }
 
 export interface ChatCompletionRequest {
-  model: string
-  messages: ChatMessage[]
-  stream?: boolean
+  model: string;
+  messages: ChatMessage[];
+  stream?: boolean;
+  api_key: string;
 }
 
 export interface ChatCompletionResponse {
-  id: string
-  object: string
-  created: number
-  model: string
+  id: string;
+  object: string;
+  created: number;
+  model: string;
   choices: {
-    index: number
-    message: ChatMessage
-    finish_reason: string
-  }[]
+    index: number;
+    message: ChatMessage;
+    finish_reason: string;
+  }[];
 }
 
 export interface ChatCompletionStreamResponse {
-  id: string
-  object: string
-  created: number
-  model: string
+  id: string;
+  object: string;
+  created: number;
+  model: string;
   choices: {
-    index: number
+    index: number;
     delta: {
-      role?: string
-      content?: string
-    }
-    finish_reason: string | null
-  }[]
+      role?: string;
+      content?: string;
+    };
+    finish_reason: string | null;
+  }[];
 }

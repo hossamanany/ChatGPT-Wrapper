@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	bannedStems []string
+	bannedStems map[string]struct{}
 	once        sync.Once
 )
 
@@ -31,14 +31,14 @@ func LoadBannedWords() {
 		}
 
 		// Stem each word and store in memory
-		bannedStems = make([]string, 0, len(words))
+		bannedStems = make(map[string]struct{}, len(words))
 		for _, word := range words {
 			stemmed, err := snowball.Stem(word, "english", true)
 			if err != nil {
 				log.Printf("Warning: Failed to stem word '%s': %v", word, err)
 				stemmed = word
 			}
-			bannedStems = append(bannedStems, stemmed)
+			bannedStems[stemmed] = struct{}{}
 		}
 
 		log.Printf("Loaded %d banned word stems", len(bannedStems))
@@ -46,6 +46,6 @@ func LoadBannedWords() {
 }
 
 // GetBannedStems returns the cached list of banned word stems
-func GetBannedStems() []string {
+func GetBannedStems() map[string]struct{} {
 	return bannedStems
 }
