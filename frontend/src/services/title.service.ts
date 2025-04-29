@@ -36,9 +36,9 @@ export async function generateTitle(message: string): Promise<void> {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Title generation failed:", errorText);
-      throw new Error("Failed to generate title");
+      const errorData = await response.json();
+      console.error("Title generation failed:", errorData);
+      throw new Error(errorData.error || "Failed to generate title");
     }
 
     const data = await response.json();

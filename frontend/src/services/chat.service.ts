@@ -28,7 +28,8 @@ export async function streamChatResponse(): Promise<void> {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to get streaming response");
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to get streaming response");
   }
 
   const reader = response.body?.getReader();
