@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import OpenAI from "openai";
+import { computed, onMounted, ref } from "vue";
 import { PlayIcon } from "@heroicons/vue/24/outline";
-import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { Role } from "@/models/role.model";
 import { useChatStore } from "@/stores/chat.store";
 import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
-import { useSettingsStore } from "@/stores/settings.store";
 import { FwbAlert, FwbButton, FwbSpinner } from "flowbite-vue";
 import { useAppStore } from "@/stores/app.store";
+import { generateTitle } from "@/services/title.service";
+import { streamChatResponse } from "@/services/chat.service";
 
 const input = ref("");
 const numOfInputRows = ref(1);
@@ -20,7 +19,6 @@ const pending = ref(false);
 
 const appStore = useAppStore();
 const chatStore = useChatStore();
-const settingsStore = useSettingsStore();
 
 const md = new MarkdownIt({
   breaks: true,
@@ -37,21 +35,11 @@ const md = new MarkdownIt({
   },
 });
 
-const isInputEnabled = computed(
-  () => settingsStore.apiKey.length > 0 && !pending.value
-);
-const isSendBtnEnabled = computed(
-  () => input.value?.trim().length > 0 && settingsStore.apiKey.trim().length > 0
-);
+const isInputEnabled = computed(() => !pending.value);
+const isSendBtnEnabled = computed(() => input.value?.trim().length > 0);
 
 onMounted(() => {
   setTimeout(() => inputTextarea.value?.focus(), 100);
-});
-
-// TODO: We shouldn't use direct client connection to OpenAI
-const openai = new OpenAI({
-  apiKey: settingsStore.apiKey,
-  dangerouslyAllowBrowser: true,
 });
 
 async function onSend() {
@@ -61,7 +49,9 @@ async function onSend() {
     inputTextarea.value?.blur();
     await chatStore.addMessage({ role: Role.user, content: input.value });
     autoScrollDown();
-    sendRequestForTitle(input.value);
+
+    await sendRequestForTitle(input.value);
+
     input.value = "";
     await sendRequestForResponse();
   } catch (e) {
@@ -72,41 +62,23 @@ async function onSend() {
   pending.value = false;
 }
 
-// TODO: This should be moved to a service
 async function sendRequestForTitle(message: string) {
-  if (chatStore.currentChat && !chatStore.currentChat.title) {
-    const completion = await openai.chat.completions.create({
-      messages: [
-        {
-          role: Role.user,
-          content:
-            "Summarize the input as title of no more than 5 words." +
-            `Output only the summarized title. The input is: ${message}`,
-        },
-      ],
-      model: "gpt-4o-mini",
-      temperature: 0.5,
-      max_tokens: 1000,
-    });
-    await chatStore.setCurrentChatTitle(completion.choices[0].message.content);
+  try {
+    await generateTitle(message);
+  } catch (e) {
+    if (e instanceof Error) {
+      appStore.addError(e.message);
+    }
   }
 }
 
-// TODO: This should be moved to a service
 async function sendRequestForResponse() {
-  if (chatStore.currentChat) {
-    const stream = await openai.chat.completions.create({
-      messages: chatStore.currentChat.messages as ChatCompletionMessageParam[],
-      model: settingsStore.model,
-      temperature: +settingsStore.temp,
-      max_tokens: +settingsStore.maxTokens,
-      stream: true,
-    });
-    for await (const chunk of stream) {
-      await chatStore.updateLastMessageStream(
-        chunk.choices[0]?.delta?.content || ""
-      );
-      autoScrollDown();
+  try {
+    await streamChatResponse();
+    autoScrollDown();
+  } catch (e) {
+    if (e instanceof Error) {
+      appStore.addError(e.message);
     }
   }
 }
@@ -124,15 +96,6 @@ function checkIfUserScrolled() {
       scrollingDiv.value.scrollHeight;
   }
 }
-
-watch(
-  () => settingsStore.apiKey,
-  (newValue, oldValue) => {
-    if (newValue !== oldValue) {
-      openai.apiKey = settingsStore.apiKey;
-    }
-  }
-);
 </script>
 
 <template>
@@ -184,13 +147,7 @@ watch(
       <textarea
         class="p-2 overflow-x-hidden w-full text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         :rows="numOfInputRows"
-        :placeholder="
-          pending
-            ? 'Answering...'
-            : settingsStore.apiKey.length === 0
-            ? 'Enter your API key in settings'
-            : `Chat with ${settingsStore.model}...`
-        "
+        :placeholder="pending ? 'Answering...' : 'Chat with AI...'"
         ref="inputTextarea"
         v-model="input"
         @keydown.enter="

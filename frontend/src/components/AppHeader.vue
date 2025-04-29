@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { useAppStore } from "@/stores/app.store";
 import { Bars3Icon } from "@heroicons/vue/24/outline";
-import { Cog6ToothIcon } from "@heroicons/vue/24/outline";
 import { QuestionMarkCircleIcon } from "@heroicons/vue/24/outline";
-import { useSettingsStore } from "@/stores/settings.store";
 
 const appStore = useAppStore();
-const settingsStore = useSettingsStore();
 </script>
 
 <template>
@@ -18,13 +15,7 @@ const settingsStore = useSettingsStore();
       ></Bars3Icon>
     </div>
     <div class="flex">
-      <div title="Show settings">
-        <Cog6ToothIcon
-          class="h-6 w-6 text-gray-500 cursor-pointer hover-blue"
-          @click="settingsStore.showSettings()"
-        ></Cog6ToothIcon>
-      </div>
-      <div title="About" class="ml-2">
+      <div title="About">
         <QuestionMarkCircleIcon
           class="h-6 w-6 text-gray-500 cursor-pointer hover-blue"
           @click="appStore.showAbout()"

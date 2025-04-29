@@ -35,8 +35,8 @@ func main() {
 	})
 
 	// Routes
-	r.POST("/api/chat", handlers.HandleChat)
 	r.POST("/api/chat/stream", handlers.HandleStream)
+	r.POST("/api/chat/title", handlers.HandleTitle)
 
 	// Start server
 	port := os.Getenv("PORT")

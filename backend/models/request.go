@@ -4,7 +4,7 @@ package models
 type ChatCompletionRequest struct {
 	Model       string        `json:"model"`
 	Messages    []ChatMessage `json:"messages"`
-	Temperature float64       `json:"temperature,omitempty"`
+	Temperature float32       `json:"temperature,omitempty"`
 	Stream      bool          `json:"stream,omitempty"`
 	MaxTokens   int           `json:"max_tokens,omitempty"`
 }

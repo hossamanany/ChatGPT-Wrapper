@@ -5,8 +5,8 @@ import { db } from "@/db";
 import Dexie from "dexie";
 import type { Message } from "@/models/message.model";
 import { Role } from "@/models/role.model";
-import { ApiService } from "@/services/api";
-import type { ChatCompletionRequest } from "@/models/api.model";
+import { streamChatResponse } from "@/services/chat.service";
+import { generateTitle as generateChatTitle } from "@/services/title.service";
 
 export const useChatStore = defineStore("chat", () => {
   const chats = ref<Chat[]>([]);
@@ -64,29 +64,9 @@ export const useChatStore = defineStore("chat", () => {
     const userMessage: Message = { role: Role.user, content };
     await addMessage(userMessage);
 
-    const request: ChatCompletionRequest = {
-      model: "gpt-3.5-turbo",
-      messages: currentChat.value.messages.map((msg) => ({
-        role: msg.role as "system" | "user" | "assistant",
-        content: msg.content || "",
-      })),
-      stream: true,
-    };
-
     isStreaming.value = true;
     try {
-      await ApiService.createChatCompletionStream(
-        request,
-        (chunk) => updateLastMessageStream(chunk),
-        (error) => {
-          console.error("Stream error:", error);
-          isStreaming.value = false;
-        },
-        () => {
-          isStreaming.value = false;
-          generateTitle();
-        }
-      );
+      await streamChatResponse();
     } catch (error) {
       console.error("Error sending message:", error);
       isStreaming.value = false;
@@ -96,26 +76,11 @@ export const useChatStore = defineStore("chat", () => {
   async function generateTitle() {
     if (!currentChat.value || currentChat.value.title) return;
 
-    const request: ChatCompletionRequest = {
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: Role.system,
-          content:
-            "Generate a short title (max 5 words) for this conversation based on the first message.",
-        },
-        ...currentChat.value.messages.slice(0, 2).map((msg) => ({
-          role: msg.role as "system" | "user" | "assistant",
-          content: msg.content || "",
-        })),
-      ],
-    };
+    const firstUserMessage = currentChat.value.messages[1]?.content;
+    if (!firstUserMessage) return;
 
     try {
-      const response = await ApiService.generateTitle(request);
-      if (response.choices[0]?.message?.content) {
-        await setCurrentChatTitle(response.choices[0].message.content.trim());
-      }
+      await generateChatTitle(firstUserMessage);
     } catch (error) {
       console.error("Error generating title:", error);
     }
