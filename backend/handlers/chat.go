@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 
@@ -27,7 +28,7 @@ func HandleStream(c *gin.Context) {
 	}
 
 	// Set headers for SSE
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Content-Type", "application/octet-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")
 	c.Writer.Header().Set("Transfer-Encoding", "chunked")
@@ -57,8 +58,7 @@ func HandleStream(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		c.SSEvent("error", "Failed to create stream")
-		c.Writer.Flush()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create stream"})
 		return
 	}
 	defer stream.Close()
@@ -66,17 +66,18 @@ func HandleStream(c *gin.Context) {
 	for {
 		response, err := stream.Recv()
 		if err != nil {
-			if err.Error() == "stream closed" {
-				break
-			}
-			c.SSEvent("error", "Error receiving stream")
-			c.Writer.Flush()
-			return
+			break
 		}
 
-		if len(response.Choices) > 0 && response.Choices[0].Delta.Content != "" {
-			c.SSEvent("message", response.Choices[0].Delta.Content)
-			c.Writer.Flush()
+		// Marshal the response into JSON
+		jsonData, err := json.Marshal(response)
+		if err != nil {
+			continue
 		}
+
+		// Write it directly without "data:" prefix
+		c.Writer.Write(jsonData)
+		c.Writer.Write([]byte("\n"))
+		c.Writer.Flush()
 	}
 }

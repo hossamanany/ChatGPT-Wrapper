@@ -39,7 +39,6 @@ export async function streamChatResponse(): Promise<void> {
     throw new Error("Failed to initialize stream reader");
   }
 
-  // TODO: We need to format the response properly
   try {
     let buffer = "";
     while (true) {
@@ -48,15 +47,14 @@ export async function streamChatResponse(): Promise<void> {
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      buffer = lines.pop() || ""; // Keep the last partial line in the buffer
+      buffer = lines.pop() || "";
 
       for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (trimmedLine.startsWith("data:")) {
-          const content = trimmedLine.slice(5).trim(); // Remove "data:" and trim
-          if (content && content !== "[DONE]") {
-            await chatStore.updateLastMessageStream(content);
-          }
+        if (!line.trim()) continue;
+        const parsed = JSON.parse(line);
+        const content = parsed.choices[0]?.delta?.content;
+        if (content) {
+          await chatStore.updateLastMessageStream(content);
         }
       }
     }
