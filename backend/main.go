@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ai-chat/config"
-	"ai-chat/handlers"
+	"chatgpt-wrapper/config"
+	"chatgpt-wrapper/handlers"
 	"log"
 	"os"
 

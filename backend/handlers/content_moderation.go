@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	"ai-chat/config"
+	"chatgpt-wrapper/config"
 
 	"github.com/kljensen/snowball"
 )

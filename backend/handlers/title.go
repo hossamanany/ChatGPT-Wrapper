@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"ai-chat/models"
+	"chatgpt-wrapper/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sashabaranov/go-openai"

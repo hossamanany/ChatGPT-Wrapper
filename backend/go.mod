@@ -1,4 +1,4 @@
-module ai-chat
+module chatgpt-wrapper
 
 go 1.20
 

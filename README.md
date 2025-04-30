@@ -19,7 +19,7 @@ Created by Hossam Elanany
 ## Project Structure
 
 ```
-ai-chat/
+chatgpt-wrapper/
 ├── frontend/          # Vue.js frontend application
 │   ├── src/           # Source files
 │   ├── public/        # Static assets
@@ -80,22 +80,6 @@ go run main.go
 
 The frontend will be available at `http://localhost:5173` and the backend at `http://localhost:8080`.
 
-## Building for Production
-
-### Frontend
-
-```sh
-cd frontend
-npm run build
-```
-
-### Backend
-
-```sh
-cd backend
-go build
-```
-
 ## Environment Variables
 
 Create a `.env` file in the backend directory with the following variables:
@@ -122,18 +106,26 @@ All API requests require the `X-API-Key` header with a valid API key.
 
 ## Technologies Used
 
-- Frontend:
+### Frontend
 
-  - Vue.js 3
-  - TypeScript
-  - Tailwind CSS
-  - Vite
-  - Pinia
-  - Markdown-it
-  - Highlight.js
+- Vue.js 3
+- TypeScript
+- Tailwind CSS
+- Vite
+- Pinia
+- Markdown-it
+- Highlight.js
+- Flowbite
+- Heroicons
+- Dexie
+- Zod
+- UUID
+- Validator
 
-- Backend:
-  - Go
-  - Gin
-  - OpenAI API (ChatGPT)
-  - Godotenv
+### Backend
+
+- Go
+- Gin
+- OpenAI API (ChatGPT)
+- Godotenv
+- Snowball
