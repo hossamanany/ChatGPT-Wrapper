@@ -23,13 +23,21 @@ ai-chat/
 ├── frontend/          # Vue.js frontend application
 │   ├── src/           # Source files
 │   ├── public/        # Static assets
-│   └── package.json   # Frontend dependencies
+│   ├── node_modules/  # Dependencies
+│   ├── package.json   # Frontend dependencies and scripts
+│   ├── tsconfig.json  # TypeScript configuration
+│   ├── tsconfig.app.json  # App-specific TypeScript config
+│   ├── tsconfig.node.json # Node-specific TypeScript config
+│   ├── vite.config.ts # Vite configuration
+│   ├── tailwind.config.js # Tailwind CSS configuration
+│   ├── postcss.config.js  # PostCSS configuration
+│   └── index.html     # Entry HTML file
 └── backend/           # Go backend server
     ├── handlers/      # Request handlers
     ├── config/        # Configuration files
-    ├── filters/       # Content filtering
-    ├── openai/        # OpenAI integration
-    └── models/        # Data models
+    ├── models/        # Data models
+    ├── main.go        # Application entry point
+    └── go.mod         # Go module definition
 ```
 
 ## Prerequisites
@@ -100,7 +108,17 @@ PORT=8080
 ## API Endpoints
 
 - `POST /api/chat` - Standard ChatGPT completion
+
+  - Request body: JSON with `message` field
+  - Response: JSON with `response` field
+  - Authentication: Required (API key in header)
+
 - `POST /api/chat/stream` - Streaming ChatGPT completion
+  - Request body: JSON with `message` field
+  - Response: Server-Sent Events (SSE) stream
+  - Authentication: Required (API key in header)
+
+All API requests require the `X-API-Key` header with a valid API key.
 
 ## Technologies Used
 
