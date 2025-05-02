@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 
 	"chatgpt-wrapper/models"
 
@@ -57,6 +58,9 @@ func HandleStream(c *gin.Context) {
 
 	// Initialize OpenAI client
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	model := os.Getenv("OPENAI_MODEL")
+	temperature, _ := strconv.ParseFloat(os.Getenv("OPENAI_TEMPERATURE"), 32)
+	maxTokens, _ := strconv.Atoi(os.Getenv("OPENAI_MAX_TOKENS"))
 
 	// Convert messages to OpenAI format
 	messages := make([]openai.ChatCompletionMessage, len(req.Messages))
@@ -71,10 +75,10 @@ func HandleStream(c *gin.Context) {
 	stream, err := client.CreateChatCompletionStream(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:       req.Model,
+			Model:       model,
 			Messages:    messages,
-			Temperature: req.Temperature,
-			MaxTokens:   req.MaxTokens,
+			Temperature: float32(temperature),
+			MaxTokens:   maxTokens,
 			Stream:      true,
 		},
 	)
