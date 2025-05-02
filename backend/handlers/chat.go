@@ -52,9 +52,6 @@ func HandleStream(c *gin.Context) {
 		return
 	}
 
-	// Initialize OpenAI client
-	client := openai.NewClient(cfg.OpenAIAPIKey)
-
 	// Convert messages to OpenAI format
 	messages := make([]openai.ChatCompletionMessage, len(req.Messages))
 	for i, msg := range req.Messages {
@@ -65,16 +62,7 @@ func HandleStream(c *gin.Context) {
 	}
 
 	// Create streaming chat completion
-	stream, err := client.CreateChatCompletionStream(
-		c.Request.Context(),
-		openai.ChatCompletionRequest{
-			Model:       cfg.OpenAIModel,
-			Messages:    messages,
-			Temperature: cfg.OpenAITemperature,
-			MaxTokens:   cfg.OpenAIMaxTokens,
-			Stream:      true,
-		},
-	)
+	stream, err := openAIService.CreateChatCompletionStream(c.Request.Context(), messages)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create stream"})
 		return

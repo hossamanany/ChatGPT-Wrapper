@@ -25,9 +25,6 @@ func HandleTitle(c *gin.Context) {
 		return
 	}
 
-	// Initialize OpenAI client
-	client := openai.NewClient(cfg.OpenAIAPIKey)
-
 	// Convert message to OpenAI format with title generation prompt
 	messages := []openai.ChatCompletionMessage{
 		{
@@ -37,15 +34,7 @@ func HandleTitle(c *gin.Context) {
 	}
 
 	// Create chat completion for title generation
-	resp, err := client.CreateChatCompletion(
-		c.Request.Context(),
-		openai.ChatCompletionRequest{
-			Model:       cfg.OpenAIModel,
-			Messages:    messages,
-			Temperature: cfg.OpenAITemperature,
-			MaxTokens:   cfg.OpenAIMaxTokens,
-		},
-	)
+	resp, err := openAIService.CreateChatCompletion(c.Request.Context(), messages)
 	if err != nil {
 		log.Printf("Error generating title: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate title"})
