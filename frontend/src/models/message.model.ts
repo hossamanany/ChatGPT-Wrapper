@@ -1,4 +1,4 @@
 export interface Message {
-  role: string,
-  content: string|null
+  role: string;
+  content: string | null;
 }

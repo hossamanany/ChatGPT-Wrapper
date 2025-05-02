@@ -15,7 +15,7 @@ import (
 
 // HandleStream handles streaming chat completion requests
 func HandleStream(c *gin.Context) {
-	var req models.ChatCompletionRequest
+	var req models.StreamRequestMessages
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
@@ -31,11 +31,10 @@ func HandleStream(c *gin.Context) {
 	lastMessage := req.Messages[len(req.Messages)-1].Content
 	isValid, _ := ValidateMessageContent(lastMessage)
 
-	// Set headers for SSE
+	// Set headers for streaming response
 	c.Writer.Header().Set("Content-Type", "application/octet-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")
-	c.Writer.Header().Set("Transfer-Encoding", "chunked")
 	c.Writer.Flush()
 
 	// If content is invalid, send warning message and return

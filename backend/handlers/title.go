@@ -15,30 +15,30 @@ import (
 
 // HandleTitle handles title generation requests
 func HandleTitle(c *gin.Context) {
-	var req models.TitleGenerationRequest
-	model := os.Getenv("OPENAI_MODEL")
-	temperature, _ := strconv.ParseFloat(os.Getenv("OPENAI_TEMPERATURE"), 32)
-	maxTokens, _ := strconv.Atoi(os.Getenv("OPENAI_MAX_TOKENS"))
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-
+	var req models.RequestMessage
 	if err := c.BindJSON(&req); err != nil {
 		log.Printf("Error binding request: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	// Convert message to OpenAI format with title generation prompt
-	if len(req.Messages) == 0 {
+	if req.Content == "" {
 		log.Printf("No messages provided for title generation")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No messages provided"})
 		return
 	}
 
-	firstMessage := req.Messages[0]
+	// Initialize OpenAI client
+	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	model := os.Getenv("OPENAI_MODEL")
+	temperature, _ := strconv.ParseFloat(os.Getenv("OPENAI_TEMPERATURE"), 32)
+	maxTokens, _ := strconv.Atoi(os.Getenv("OPENAI_MAX_TOKENS"))
+
+	// Convert message to OpenAI format with title generation prompt
 	messages := []openai.ChatCompletionMessage{
 		{
-			Role:    firstMessage.Role,
-			Content: "Summarize the input as title of no more than 5 words. Output only the summarized title. The input is: " + firstMessage.Content,
+			Role:    req.Role,
+			Content: "Summarize the input as title of no more than 5 words. Output only the summarized title. The input is: " + req.Content,
 		},
 	}
 

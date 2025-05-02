@@ -16,12 +16,8 @@ export async function generateTitle(message: string): Promise<void> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messages: [
-          {
-            role: Role.user,
-            content: message,
-          },
-        ],
+        role: Role.user,
+        content: message,
       }),
     });
 

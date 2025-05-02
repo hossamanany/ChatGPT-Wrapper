@@ -1,12 +1,10 @@
-import type { ChatCompletionMessageParam } from "openai/resources/chat/completions"; // TODO: We should use our own type
 import { useChatStore } from "@/stores/chat.store";
+import type { Message } from "@/models/message.model";
 
 /**
  * Fetches the chat stream response from the API.
  */
-async function fetchChatStream(
-  messages: ChatCompletionMessageParam[]
-): Promise<Response> {
+async function fetchChatStream(messages: Message[]): Promise<Response> {
   const response = await fetch("/api/chat/stream", {
     method: "POST",
     headers: {
@@ -79,9 +77,7 @@ export async function streamChatResponse(): Promise<void> {
     return;
   }
 
-  const response = await fetchChatStream(
-    chatStore.currentChat.messages as ChatCompletionMessageParam[]
-  );
+  const response = await fetchChatStream(chatStore.currentChat.messages);
   const reader = getStreamReader(response);
 
   await processStream(reader, async (content) => {
