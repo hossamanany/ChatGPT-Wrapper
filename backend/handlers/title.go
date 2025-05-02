@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"chatgpt-wrapper/models"
 
@@ -14,35 +15,41 @@ import (
 
 // HandleTitle handles title generation requests
 func HandleTitle(c *gin.Context) {
-	var req models.ChatCompletionRequest
+	var req models.TitleGenerationRequest
+	model := os.Getenv("OPENAI_MODEL")
+	temperature, _ := strconv.ParseFloat(os.Getenv("OPENAI_TEMPERATURE"), 32)
+	maxTokens, _ := strconv.Atoi(os.Getenv("OPENAI_MAX_TOKENS"))
+	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+
 	if err := c.BindJSON(&req); err != nil {
 		log.Printf("Error binding request: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	log.Printf("Generating title for request: %+v", req)
+	// Convert message to OpenAI format with title generation prompt
+	if len(req.Messages) == 0 {
+		log.Printf("No messages provided for title generation")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No messages provided"})
+		return
+	}
 
-	// Initialize OpenAI client
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-
-	// Convert messages to OpenAI format
-	messages := make([]openai.ChatCompletionMessage, len(req.Messages))
-	for i, msg := range req.Messages {
-		messages[i] = openai.ChatCompletionMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		}
+	firstMessage := req.Messages[0]
+	messages := []openai.ChatCompletionMessage{
+		{
+			Role:    firstMessage.Role,
+			Content: "Summarize the input as title of no more than 5 words. Output only the summarized title. The input is: " + firstMessage.Content,
+		},
 	}
 
 	// Create chat completion for title generation
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:       req.Model,
+			Model:       model,
 			Messages:    messages,
-			Temperature: req.Temperature,
-			MaxTokens:   req.MaxTokens,
+			Temperature: float32(temperature),
+			MaxTokens:   maxTokens,
 		},
 	)
 	if err != nil {

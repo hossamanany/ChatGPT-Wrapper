@@ -3,11 +3,6 @@ import { useChatStore } from "@/stores/chat.store";
 
 export async function generateTitle(message: string): Promise<void> {
   const chatStore = useChatStore();
-  const openaiModel = import.meta.env.VITE_OPENAI_MODEL || "gpt-3.5-turbo";
-  const openaiTemperature =
-    Number(import.meta.env.VITE_OPENAI_TEMPERATURE) || 0.5;
-  const openaiMaxTokens =
-    Number(import.meta.env.VITE_OPENAI_MAX_TOKENS) || 1000;
 
   if (!chatStore.currentChat || chatStore.currentChat.title) {
     return;
@@ -24,14 +19,9 @@ export async function generateTitle(message: string): Promise<void> {
         messages: [
           {
             role: Role.user,
-            content:
-              "Summarize the input as title of no more than 5 words. Output only the summarized title. The input is: " +
-              message,
+            content: message,
           },
         ],
-        model: openaiModel,
-        temperature: openaiTemperature,
-        max_tokens: openaiMaxTokens,
       }),
     });
 

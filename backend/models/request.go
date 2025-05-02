@@ -1,6 +1,11 @@
 package models
 
-// ChatCompletionRequest represents the request structure for chat completions
+// TitleGenerationRequest represents the request structure from frontend for title generation
+type TitleGenerationRequest struct {
+	Messages []ChatMessage `json:"messages"`
+}
+
+// ChatCompletionRequest represents the request structure for OpenAI chat completions
 type ChatCompletionRequest struct {
 	Model       string        `json:"model"`
 	Messages    []ChatMessage `json:"messages"`
