@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"chatgpt-wrapper/models"
@@ -14,12 +15,14 @@ import (
 func HandleStream(c *gin.Context) {
 	var req models.StreamRequestMessages
 	if err := c.BindJSON(&req); err != nil {
+		log.Printf("Error binding request: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
 	// Check if messages array is empty
 	if len(req.Messages) == 0 {
+		log.Printf("Empty messages array received")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Messages array cannot be empty"})
 		return
 	}
@@ -45,9 +48,20 @@ func HandleStream(c *gin.Context) {
 				},
 			},
 		}
-		jsonData, _ := json.Marshal(response)
-		c.Writer.Write(jsonData)
-		c.Writer.Write([]byte("\n"))
+		jsonData, err := json.Marshal(response)
+		if err != nil {
+			log.Printf("Error marshaling invalid content response: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process request"})
+			return
+		}
+		if _, err := c.Writer.Write(jsonData); err != nil {
+			log.Printf("Error writing invalid content response: %v", err)
+			return
+		}
+		if _, err := c.Writer.Write([]byte("\n")); err != nil {
+			log.Printf("Error writing newline: %v", err)
+			return
+		}
 		c.Writer.Flush()
 		return
 	}
@@ -64,6 +78,7 @@ func HandleStream(c *gin.Context) {
 	// Create streaming chat completion
 	stream, err := openAIService.CreateChatCompletionStream(c.Request.Context(), messages)
 	if err != nil {
+		log.Printf("Error creating chat completion stream: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create stream"})
 		return
 	}
@@ -72,18 +87,26 @@ func HandleStream(c *gin.Context) {
 	for {
 		response, err := stream.Recv()
 		if err != nil {
+			log.Printf("Error receiving stream response: %v", err)
 			break
 		}
 
 		// Marshal the response into JSON
 		jsonData, err := json.Marshal(response)
 		if err != nil {
+			log.Printf("Error marshaling stream response: %v", err)
 			continue
 		}
 
 		// Write it directly without "data:" prefix
-		c.Writer.Write(jsonData)
-		c.Writer.Write([]byte("\n"))
+		if _, err := c.Writer.Write(jsonData); err != nil {
+			log.Printf("Error writing stream response: %v", err)
+			return
+		}
+		if _, err := c.Writer.Write([]byte("\n")); err != nil {
+			log.Printf("Error writing newline: %v", err)
+			return
+		}
 		c.Writer.Flush()
 	}
 }
