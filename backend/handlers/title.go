@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	"chatgpt-wrapper/models"
 
@@ -29,10 +26,7 @@ func HandleTitle(c *gin.Context) {
 	}
 
 	// Initialize OpenAI client
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-	model := os.Getenv("OPENAI_MODEL")
-	temperature, _ := strconv.ParseFloat(os.Getenv("OPENAI_TEMPERATURE"), 32)
-	maxTokens, _ := strconv.Atoi(os.Getenv("OPENAI_MAX_TOKENS"))
+	client := openai.NewClient(cfg.OpenAIAPIKey)
 
 	// Convert message to OpenAI format with title generation prompt
 	messages := []openai.ChatCompletionMessage{
@@ -44,12 +38,12 @@ func HandleTitle(c *gin.Context) {
 
 	// Create chat completion for title generation
 	resp, err := client.CreateChatCompletion(
-		context.Background(),
+		c.Request.Context(),
 		openai.ChatCompletionRequest{
-			Model:       model,
+			Model:       cfg.OpenAIModel,
 			Messages:    messages,
-			Temperature: float32(temperature),
-			MaxTokens:   maxTokens,
+			Temperature: cfg.OpenAITemperature,
+			MaxTokens:   cfg.OpenAIMaxTokens,
 		},
 	)
 	if err != nil {
