@@ -1,3 +1,5 @@
+// Package handlers contains HTTP request handlers for the ChatGPT Wrapper API.
+// It implements the core chat functionality including streaming responses and message validation.
 package handlers
 
 import (
@@ -11,7 +13,18 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-// HandleStream handles streaming chat completion requests
+// HandleStream processes streaming chat completion requests.
+// It:
+// - Validates the incoming request format and content
+// - Sets up streaming response headers
+// - Checks message content for inappropriate content
+// - Creates and manages the OpenAI chat completion stream
+// - Streams the responses back to the client in real-time
+//
+// Parameters:
+//   - c: Gin context containing the HTTP request and response
+//
+// The function returns a streaming response with chat completions or an error if the request is invalid.
 func HandleStream(c *gin.Context) {
 	var req models.StreamRequestMessages
 	if err := c.BindJSON(&req); err != nil {

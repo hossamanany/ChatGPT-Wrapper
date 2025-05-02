@@ -1,3 +1,5 @@
+// Package main sets up and runs the ChatGPT Wrapper API server.
+// It handles configuration loading, middleware setup, and route initialization.
 package main
 
 import (
@@ -10,6 +12,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// main is the entry point of the application.
+// It:
+// - Loads environment variables from .env file
+// - Initializes application configuration
+// - Sets up the Gin router with CORS middleware
+// - Registers API endpoints
+// - Starts the HTTP server on the configured port
 func main() {
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {

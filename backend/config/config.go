@@ -1,3 +1,6 @@
+// Package config manages application configuration and environment variables.
+// It provides functionality to load and validate configuration values from environment variables
+// with sensible defaults for missing values.
 package config
 
 import (
@@ -6,7 +9,15 @@ import (
 	"strconv"
 )
 
-// Config holds all configuration values
+// Config holds the application configuration values.
+// It contains settings for OpenAI API integration and server configuration.
+//
+// Fields:
+//   - OpenAIAPIKey: The API key for OpenAI services
+//   - OpenAIModel: The OpenAI model to use (e.g., "gpt-3.5-turbo")
+//   - OpenAITemperature: Controls randomness in responses (0.0 to 1.0)
+//   - OpenAIMaxTokens: Maximum number of tokens to generate in responses
+//   - Port: The port number the server will listen on
 type Config struct {
 	OpenAIAPIKey      string
 	OpenAIModel       string
@@ -15,7 +26,13 @@ type Config struct {
 	Port              string
 }
 
-// NewConfig creates a new Config instance with values from environment variables
+// NewConfig creates a new Config instance with values from environment variables.
+// It loads configuration values from environment variables with the following precedence:
+// 1. Environment variable value if set
+// 2. Default value if environment variable is not set or invalid
+//
+// Returns:
+//   - *Config: A pointer to a new Config instance with loaded values
 func NewConfig() *Config {
 	cfg := &Config{
 		OpenAIAPIKey:      os.Getenv("OPENAI_API_KEY"),
