@@ -3,6 +3,7 @@ package main
 import (
 	"chatgpt-wrapper/config"
 	"chatgpt-wrapper/handlers"
+	"chatgpt-wrapper/middleware"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -25,16 +26,7 @@ func main() {
 	r := gin.Default()
 
 	// Configure CORS
-	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	r.Use(middleware.CORSMiddleware())
 
 	// Initialize handlers with configuration
 	handlers.InitHandlers(cfg)
