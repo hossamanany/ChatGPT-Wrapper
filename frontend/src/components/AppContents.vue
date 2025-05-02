@@ -9,9 +9,9 @@ import { FwbAlert, FwbButton, FwbSpinner } from "flowbite-vue";
 import { useAppStore } from "@/stores/app.store";
 import { generateTitle } from "@/services/title.service";
 import { streamChatResponse } from "@/services/chat.service";
+import { watch } from "vue";
 
 const input = ref("");
-const numOfInputRows = ref(1);
 const inputTextarea = ref<HTMLTextAreaElement | null>(null);
 const scrollingDiv = ref<HTMLElement | null>(null);
 const userScrolled = ref(false);
@@ -40,6 +40,15 @@ const isSendBtnEnabled = computed(() => input.value?.trim().length > 0);
 
 onMounted(() => {
   setTimeout(() => inputTextarea.value?.focus(), 100);
+});
+
+watch(input, () => {
+  if (inputTextarea.value) {
+    inputTextarea.value.style.height = "auto";
+    const borderOffset = 2;
+    inputTextarea.value.style.height =
+      inputTextarea.value.scrollHeight + borderOffset + "px";
+  }
 });
 
 async function onSend() {
@@ -139,14 +148,10 @@ function checkIfUserScrolled() {
         </template>
       </template>
     </main>
-    <div
-      class="flex w-full p-4"
-      @focusin="numOfInputRows = 10"
-      @focusout="numOfInputRows = 1"
-    >
+    <div class="flex w-full p-4">
       <textarea
-        class="p-2 overflow-x-hidden w-full text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        :rows="numOfInputRows"
+        class="p-2 overflow-x-hidden w-full text-gray-900 bg-gray-50 rounded border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 resize-none max-h-[300px] overflow-y-auto box-border"
+        :rows="1"
         :placeholder="pending ? 'Answering...' : 'Chat with AI...'"
         ref="inputTextarea"
         v-model="input"

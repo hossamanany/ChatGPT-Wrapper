@@ -20,12 +20,15 @@ func HandleStream(c *gin.Context) {
 		return
 	}
 
-	// Validate message content
-	lastMessage := req.Messages[len(req.Messages)-1].Content
-	if isValid, errMsg := ValidateMessageContent(lastMessage); !isValid {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errMsg})
+	// Check if messages array is empty
+	if len(req.Messages) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Messages array cannot be empty"})
 		return
 	}
+
+	// Validate message content
+	lastMessage := req.Messages[len(req.Messages)-1].Content
+	isValid, _ := ValidateMessageContent(lastMessage)
 
 	// Set headers for SSE
 	c.Writer.Header().Set("Content-Type", "application/octet-stream")
@@ -33,6 +36,24 @@ func HandleStream(c *gin.Context) {
 	c.Writer.Header().Set("Connection", "keep-alive")
 	c.Writer.Header().Set("Transfer-Encoding", "chunked")
 	c.Writer.Flush()
+
+	// If content is invalid, send warning message and return
+	if !isValid {
+		response := openai.ChatCompletionStreamResponse{
+			Choices: []openai.ChatCompletionStreamChoice{
+				{
+					Delta: openai.ChatCompletionStreamChoiceDelta{
+						Content: "I apologize, but I cannot process messages with inappropriate content. Please rephrase your message appropriately.",
+					},
+				},
+			},
+		}
+		jsonData, _ := json.Marshal(response)
+		c.Writer.Write(jsonData)
+		c.Writer.Write([]byte("\n"))
+		c.Writer.Flush()
+		return
+	}
 
 	// Initialize OpenAI client
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
