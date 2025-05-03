@@ -1,4 +1,5 @@
+import { Role } from "@/models/role.model";
 export interface Message {
-  role: string;
+  role: Role;
   content: string | null;
 }

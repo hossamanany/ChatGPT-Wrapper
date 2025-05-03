@@ -9,6 +9,8 @@ import (
 
 	"chatgpt-wrapper/models"
 
+	"chatgpt-wrapper/utils"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sashabaranov/go-openai"
 )
@@ -42,7 +44,7 @@ func HandleStream(c *gin.Context) {
 
 	// Validate message content
 	lastMessage := req.Messages[len(req.Messages)-1].Content
-	isValid, _ := ValidateMessageContent(lastMessage)
+	isValid, _ := utils.ValidateMessageContent(lastMessage)
 
 	// Set headers for streaming response
 	c.Writer.Header().Set("Content-Type", "application/octet-stream")
